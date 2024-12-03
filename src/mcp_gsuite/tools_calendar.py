@@ -11,6 +11,49 @@ from . import calendar
 import json
 from . import toolhandler
 
+CALENDAR_ID_ARG="__calendar_id__"
+
+def get_calendar_id_arg_schema() -> str:
+    return {
+        "type": "string",
+        "description": """Optional ID of the specific agenda for which you are executing this action.
+                          If not known, it can be retrieved with the list_calendars tool""",
+        "default": "primary"
+    }
+
+
+class ListCalendarsToolHandler(toolhandler.ToolHandler):
+    def __init__(self):
+        super().__init__("list_calendars")
+
+    def get_tool_description(self) -> Tool:
+        return Tool(
+            name=self.name,
+            description="Lists all calendars accessible by the user.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                },
+                "required": [toolhandler.USER_ID_ARG]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+
+        calendar_service = calendar.CalendarService(user_id=user_id)
+        calendars = calendar_service.list_calendars()
+
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(calendars, indent=2)
+            )
+        ]
+
 class GetCalendarEventsToolHandler(toolhandler.ToolHandler):
     def __init__(self):
         super().__init__("get_calendar_events")
@@ -22,6 +65,8 @@ class GetCalendarEventsToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "__calendar_id__": get_calendar_id_arg_schema(),
                     "time_min": {
                         "type": "string",
                         "description": "Start time in RFC3339 format (e.g. 2024-12-01T00:00:00Z). Defaults to current time if not specified."
@@ -43,17 +88,23 @@ class GetCalendarEventsToolHandler(toolhandler.ToolHandler):
                         "default": False
                     }
                 },
-                "required": []
+                "required": [toolhandler.USER_ID_ARG]
             }
         )
 
     def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
-        calendar_service = calendar.CalendarService()
+        
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        
+        calendar_service = calendar.CalendarService(user_id=user_id)
         events = calendar_service.get_events(
             time_min=args.get('time_min'),
             time_max=args.get('time_max'),
             max_results=args.get('max_results', 250),
-            show_deleted=args.get('show_deleted', False)
+            show_deleted=args.get('show_deleted', False),
+            calendar_id=args.get(CALENDAR_ID_ARG, 'primary'),
         )
 
         return [
@@ -74,6 +125,8 @@ class CreateCalendarEventToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "__calendar_id__": get_calendar_id_arg_schema(),
                     "summary": {
                         "type": "string",
                         "description": "Title of the event"
@@ -111,7 +164,7 @@ class CreateCalendarEventToolHandler(toolhandler.ToolHandler):
                         "description": "Timezone for the event (e.g. 'America/New_York'). Defaults to UTC if not specified."
                     }
                 },
-                "required": ["summary", "start_time", "end_time"]
+                "required": [toolhandler.USER_ID_ARG, "summary", "start_time", "end_time"]
             }
         )
 
@@ -121,7 +174,11 @@ class CreateCalendarEventToolHandler(toolhandler.ToolHandler):
         if not all(key in args for key in required):
             raise RuntimeError(f"Missing required arguments: {', '.join(required)}")
 
-        calendar_service = calendar.CalendarService()
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+
+        calendar_service = calendar.CalendarService(user_id=user_id)
         event = calendar_service.create_event(
             summary=args["summary"],
             start_time=args["start_time"],
@@ -130,7 +187,8 @@ class CreateCalendarEventToolHandler(toolhandler.ToolHandler):
             description=args.get("description"),
             attendees=args.get("attendees", []),
             send_notifications=args.get("send_notifications", True),
-            timezone=args.get("timezone")
+            timezone=args.get("timezone"),
+            calendar_id=args.get(CALENDAR_ID_ARG, 'primary'),
         )
 
         return [
@@ -151,6 +209,8 @@ class DeleteCalendarEventToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "__calendar_id__": get_calendar_id_arg_schema(),
                     "event_id": {
                         "type": "string",
                         "description": "The ID of the calendar event to delete"
@@ -161,18 +221,23 @@ class DeleteCalendarEventToolHandler(toolhandler.ToolHandler):
                         "default": True
                     }
                 },
-                "required": ["event_id"]
+                "required": [toolhandler.USER_ID_ARG, "event_id"]
             }
         )
 
     def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
         if "event_id" not in args:
             raise RuntimeError("Missing required argument: event_id")
+        
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
 
-        calendar_service = calendar.CalendarService()
+        calendar_service = calendar.CalendarService(user_id=user_id)
         success = calendar_service.delete_event(
             event_id=args["event_id"],
-            send_notifications=args.get("send_notifications", True)
+            send_notifications=args.get("send_notifications", True),
+            calendar_id=args.get(CALENDAR_ID_ARG, 'primary'),
         )
 
         return [

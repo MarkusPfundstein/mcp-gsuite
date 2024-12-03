@@ -11,31 +11,8 @@ from . import gmail
 import json
 from . import toolhandler
 
-class GetUserInfoToolHandler(toolhandler.ToolHandler):
-    def __init__(self):
-        super().__init__("get_gmail_user_info")
 
-    def get_tool_description(self) -> Tool:
-        return Tool(
-           name=self.name,
-           description="""Returns the gmail user info.""",
-           inputSchema={
-               "type": "object",
-               "properties": {},
-               "required": []
-           }
-       )
 
-    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
-        credentials = gauth.get_stored_credentials()
-        user_info = gauth.get_user_info(credentials=credentials)
-        return [
-            TextContent(
-                type="text",
-                text=json.dumps(user_info, indent=2)
-            )
-        ]
-    
 class QueryEmailsToolHandler(toolhandler.ToolHandler):
     def __init__(self):
         super().__init__("query_gmail_emails")
@@ -50,6 +27,7 @@ class QueryEmailsToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
                     "query": {
                         "type": "string",
                         "description": """Gmail search query (optional). Examples:
@@ -69,12 +47,17 @@ class QueryEmailsToolHandler(toolhandler.ToolHandler):
                         "default": 100
                     }
                 },
-                "required": []
+                "required": [toolhandler.USER_ID_ARG]
             }
         )
 
     def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
-        gmail_service = gmail.GmailService()
+
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+
+        gmail_service = gmail.GmailService(user_id=user_id)
         query = args.get('query')
         max_results = args.get('max_results', 100)
         emails = gmail_service.query_emails(query=query, max_results=max_results)
@@ -97,12 +80,13 @@ class GetEmailByIdToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
                     "email_id": {
                         "type": "string",
                         "description": "The ID of the Gmail message to retrieve"
                     }
                 },
-                "required": ["email_id"]
+                "required": ["email_id", toolhandler.USER_ID_ARG]
             }
         )
 
@@ -110,7 +94,10 @@ class GetEmailByIdToolHandler(toolhandler.ToolHandler):
         if "email_id" not in args:
             raise RuntimeError("Missing required argument: email_id")
 
-        gmail_service = gmail.GmailService()
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
         email = gmail_service.get_email_by_id(args["email_id"])
 
         if email is None:
@@ -144,6 +131,7 @@ class CreateDraftToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
                     "to": {
                         "type": "string",
                         "description": "Email address of the recipient"
@@ -164,7 +152,7 @@ class CreateDraftToolHandler(toolhandler.ToolHandler):
                         "description": "Optional list of email addresses to CC"
                     }
                 },
-                "required": ["to", "subject", "body"]
+                "required": ["to", "subject", "body", toolhandler.USER_ID_ARG]
             }
         )
 
@@ -173,7 +161,10 @@ class CreateDraftToolHandler(toolhandler.ToolHandler):
         if not all(key in args for key in required):
             raise RuntimeError(f"Missing required arguments: {', '.join(required)}")
 
-        gmail_service = gmail.GmailService()
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
         draft = gmail_service.create_draft(
             to=args["to"],
             subject=args["subject"],
@@ -207,12 +198,13 @@ class DeleteDraftToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
                     "draft_id": {
                         "type": "string",
                         "description": "The ID of the draft to delete"
                     }
                 },
-                "required": ["draft_id"]
+                "required": ["draft_id", toolhandler.USER_ID_ARG]
             }
         )
 
@@ -220,7 +212,10 @@ class DeleteDraftToolHandler(toolhandler.ToolHandler):
         if "draft_id" not in args:
             raise RuntimeError("Missing required argument: draft_id")
 
-        gmail_service = gmail.GmailService()
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
         success = gmail_service.delete_draft(args["draft_id"])
 
         return [
@@ -241,6 +236,7 @@ class ReplyEmailToolHandler(toolhandler.ToolHandler):
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
                     "original_message_id": {
                         "type": "string",
                         "description": "The ID of the Gmail message to reply to"
@@ -262,7 +258,7 @@ class ReplyEmailToolHandler(toolhandler.ToolHandler):
                         "description": "Optional list of email addresses to CC on the reply"
                     }
                 },
-                "required": ["original_message_id", "reply_body"]
+                "required": ["original_message_id", "reply_body", toolhandler.USER_ID_ARG]
             }
         )
 
@@ -270,7 +266,10 @@ class ReplyEmailToolHandler(toolhandler.ToolHandler):
         if not all(key in args for key in ["original_message_id", "reply_body"]):
             raise RuntimeError("Missing required arguments: original_message_id and reply_body")
 
-        gmail_service = gmail.GmailService()
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
         
         # First get the original message to extract necessary information
         original_message = gmail_service.get_email_by_id(args["original_message_id"])

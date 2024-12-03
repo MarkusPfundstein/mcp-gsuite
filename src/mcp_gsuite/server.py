@@ -64,11 +64,8 @@ from . import toolhandler
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp-gsuite")
 
-def start_auth_flow():
-    oauth_email = os.getenv('GOOGLE_EMAIL')
-    if not oauth_email:
-        raise RuntimeError("Please set GOOGLE_EMAIL env variable")
-    auth_url = gauth.get_authorization_url(oauth_email, state={})
+def start_auth_flow(user_id: str):
+    auth_url = gauth.get_authorization_url(user_id, state={})
     subprocess.Popen(['open', auth_url])
 
     # start server for code callback
@@ -77,10 +74,14 @@ def start_auth_flow():
     server.serve_forever()
 
 
-def setup_oauth2():
-    credentials = gauth.get_stored_credentials()
+def setup_oauth2(user_id: str):
+    users = os.getenv("GOOGLE_EMAILS").split(":")
+    if user_id not in users:
+        raise RuntimeError(f"email: {user_id} not specified in ENV")
+
+    credentials = gauth.get_stored_credentials(user_id=user_id)
     if not credentials:
-        start_auth_flow()
+        start_auth_flow(user_id=user_id)
     else:
         if credentials.access_token_expired:
             logger.error("credentials expired. try refresh")
@@ -88,7 +89,7 @@ def setup_oauth2():
         # this call refreshes access token
         user_info = gauth.get_user_info(credentials=credentials)
         logging.error(f"User info: {json.dumps(user_info)}")
-        gauth.store_credentials(credentials=credentials)
+        gauth.store_credentials(credentials=credentials, user_id=user_id)
 
 
 app = Server("mcp-gsuite")
@@ -105,13 +106,13 @@ def get_tool_handler(name: str) -> toolhandler.ToolHandler | None:
     
     return tool_handlers[name]
 
-add_tool_handler(tools_gmail.GetUserInfoToolHandler())
 add_tool_handler(tools_gmail.QueryEmailsToolHandler())
 add_tool_handler(tools_gmail.GetEmailByIdToolHandler())
 add_tool_handler(tools_gmail.CreateDraftToolHandler())
 add_tool_handler(tools_gmail.DeleteDraftToolHandler())
 add_tool_handler(tools_gmail.ReplyEmailToolHandler())
 
+add_tool_handler(tools_calendar.ListCalendarsToolHandler())
 add_tool_handler(tools_calendar.GetCalendarEventsToolHandler())
 add_tool_handler(tools_calendar.CreateCalendarEventToolHandler())
 add_tool_handler(tools_calendar.DeleteCalendarEventToolHandler())
@@ -129,8 +130,11 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
     
     if not isinstance(arguments, dict):
         raise RuntimeError("arguments must be dictionary")
+    
+    if toolhandler.USER_ID_ARG not in arguments:
+        raise RuntimeError("user_id argument is missing in dictionary.")
 
-    setup_oauth2()
+    setup_oauth2(user_id=arguments.get(toolhandler.USER_ID_ARG))
 
     tool_handler = get_tool_handler(name)
     if not tool_handler:
@@ -147,7 +151,6 @@ async def main():
 
     #setup_oauth2()
     logger.error("Handled oauth. start MCP server")
-
 
     # Import here to avoid issues with event loops
     from mcp.server.stdio import stdio_server

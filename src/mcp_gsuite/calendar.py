@@ -6,13 +6,43 @@ from datetime import datetime
 import pytz
 
 class CalendarService():
-    def __init__(self):
-        credentials = gauth.get_stored_credentials()
+    def __init__(self, user_id: str):
+        credentials = gauth.get_stored_credentials(user_id=user_id)
         if not credentials:
             raise RuntimeError("No Oauth2 credentials stored")
         self.service = build('calendar', 'v3', credentials=credentials)  # Note: using v3 for Calendar API
+    
+    def list_calendars(self) -> list:
+        """
+        Lists all calendars accessible by the user.
         
-    def get_events(self, time_min=None, time_max=None, max_results=250, show_deleted=False):
+        Returns:
+            list: List of calendar objects with their metadata
+        """
+        try:
+            calendar_list = self.service.calendarList().list().execute()
+
+            calendars = []
+            
+            for calendar in calendar_list.get('items', []):
+                if calendar.get('kind') == 'calendar#calendarListEntry':
+                    calendars.append({
+                        'id': calendar.get('id'),
+                        'summary': calendar.get('summary'),
+                        'primary': calendar.get('primary', False),
+                        'time_zone': calendar.get('timeZone'),
+                        'etag': calendar.get('etag'),
+                        'access_role': calendar.get('accessRole')
+                    })
+
+            return calendars
+                
+        except Exception as e:
+            logging.error(f"Error retrieving calendars: {str(e)}")
+            logging.error(traceback.format_exc())
+            return []
+
+    def get_events(self, time_min=None, time_max=None, max_results=250, show_deleted=False, calendar_id: str ='primary'):
         """
         Retrieve calendar events within a specified time range.
         
@@ -35,7 +65,7 @@ class CalendarService():
             
             # Prepare parameters
             params = {
-                'calendarId': 'primary',
+                'calendarId': calendar_id,
                 'timeMin': time_min,
                 'maxResults': max_results,
                 'singleEvents': True,
@@ -83,7 +113,8 @@ class CalendarService():
     def create_event(self, summary: str, start_time: str, end_time: str, 
                 location: str = None, description: str = None, 
                 attendees: list = None, send_notifications: bool = True,
-                timezone: str = None) -> dict:
+                timezone: str = None,
+                calendar_id : str = 'primary') -> dict:
         """
         Create a new calendar event.
         
@@ -124,7 +155,7 @@ class CalendarService():
                 
             # Create the event
             created_event = self.service.events().insert(
-                calendarId='primary',
+                calendarId=calendar_id,
                 body=event,
                 sendNotifications=send_notifications
             ).execute()
@@ -136,7 +167,7 @@ class CalendarService():
             logging.error(traceback.format_exc())
             return None
         
-    def delete_event(self, event_id: str, send_notifications: bool = True) -> bool:
+    def delete_event(self, event_id: str, send_notifications: bool = True, calendar_id: str = 'primary') -> bool:
         """
         Delete a calendar event by its ID.
         
@@ -149,7 +180,7 @@ class CalendarService():
         """
         try:
             self.service.events().delete(
-                calendarId='primary',
+                calendarId=calendar_id,
                 eventId=event_id,
                 sendNotifications=send_notifications
             ).execute()

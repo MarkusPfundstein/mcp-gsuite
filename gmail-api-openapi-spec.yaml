@@ -1,0 +1,1630 @@
+agger: "2.0"
+info:
+  title: Gmail
+  description: Access Gmail mailboxes including sending user email.
+  contact:
+    name: Google
+    url: https://google.com
+  version: v1
+host: www.googleapis.com
+basePath: /gmail/v1/users
+schemes:
+- http
+produces:
+- application/json
+consumes:
+- application/json
+paths:
+  /{userId}/drafts:
+    get:
+      summary: Get Drafts
+      description: Lists the drafts in the user's mailbox
+      operationId: gmail.users.drafts.list
+      parameters:
+      - in: query
+        name: includeSpamTrash
+        description: Include drafts from SPAM and TRASH in the results
+      - in: query
+        name: maxResults
+        description: Maximum number of drafts to return
+      - in: query
+        name: pageToken
+        description: Page token to retrieve a specific page of results in the list
+      - in: query
+        name: q
+        description: Only return draft messages matching the specified query
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+    post:
+      summary: Update Draft
+      description: Creates a new draft with the DRAFT label
+      operationId: gmail.users.drafts.create
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/drafts/send:
+    post:
+      summary: Send Draft
+      description: Sends the specified, existing draft to the recipients in the To,
+        Cc, and Bcc headers
+      operationId: gmail.users.drafts.send
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/drafts/{id}:
+    delete:
+      summary: Delete Draft
+      description: Immediately and permanently deletes the specified draft
+      operationId: gmail.users.drafts.delete
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the draft to delete
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+    get:
+      summary: Get Draft
+      description: Gets the specified draft
+      operationId: gmail.users.drafts.get
+      parameters:
+      - in: query
+        name: format
+        description: The format to return the draft in
+      - in: path
+        name: id
+        description: The ID of the draft to retrieve
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+    put:
+      summary: Update Draft
+      description: Replaces a draft's content
+      operationId: gmail.users.drafts.update
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: id
+        description: The ID of the draft to update
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/history:
+    get:
+      summary: Get History
+      description: Lists the history of all changes to the given mailbox
+      operationId: gmail.users.history.list
+      parameters:
+      - in: query
+        name: historyTypes
+        description: History types to be returned by the function
+      - in: query
+        name: labelId
+        description: Only return messages with a label matching the ID
+      - in: query
+        name: maxResults
+        description: The maximum number of history records to return
+      - in: query
+        name: pageToken
+        description: Page token to retrieve a specific page of results in the list
+      - in: query
+        name: startHistoryId
+        description: Required
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - History
+  /{userId}/labels:
+    get:
+      summary: Get Labels
+      description: Lists all labels in the user's mailbox
+      operationId: gmail.users.labels.list
+      parameters:
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+    post:
+      summary: Create Label
+      description: Creates a new label
+      operationId: gmail.users.labels.create
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+  /{userId}/labels/{id}:
+    delete:
+      summary: Delete Lbel
+      description: Immediately and permanently deletes the specified label and removes
+        it from any messages and threads that it is applied to
+      operationId: gmail.users.labels.delete
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the label to delete
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+    get:
+      summary: Get Label
+      description: Gets the specified label
+      operationId: gmail.users.labels.get
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the label to retrieve
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+    patch:
+      summary: Update Label
+      description: Updates the specified label
+      operationId: gmail.users.labels.patch
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: id
+        description: The ID of the label to update
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+    put:
+      summary: Update Label
+      description: Updates the specified label
+      operationId: gmail.users.labels.update
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: id
+        description: The ID of the label to update
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Label
+  /{userId}/messages:
+    get:
+      summary: Get Message
+      description: Lists the messages in the user's mailbox
+      operationId: gmail.users.messages.list
+      parameters:
+      - in: query
+        name: includeSpamTrash
+        description: Include messages from SPAM and TRASH in the results
+      - in: query
+        name: labelIds
+        description: Only return messages with labels that match all of the specified
+          label IDs
+      - in: query
+        name: maxResults
+        description: Maximum number of messages to return
+      - in: query
+        name: pageToken
+        description: Page token to retrieve a specific page of results in the list
+      - in: query
+        name: q
+        description: Only return messages matching the specified query
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+    post:
+      summary: Create Message
+      description: Directly inserts a message into only this user's mailbox similar
+        to IMAP APPEND, bypassing most scanning and classification
+      operationId: gmail.users.messages.insert
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: query
+        name: deleted
+        description: Mark the email as permanently deleted (not TRASH) and only visible
+          in Google Vault to a Vault administrator
+      - in: query
+        name: internalDateSource
+        description: Source for Gmail's internal date of the message
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/batchDelete:
+    post:
+      summary: Delete Messages
+      description: Deletes many messages by message ID
+      operationId: gmail.users.messages.batchDelete
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/batchModify:
+    post:
+      summary: Update Label
+      description: Modifies the labels on the specified messages
+      operationId: gmail.users.messages.batchModify
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/import:
+    post:
+      summary: Import Message
+      description: Imports a message into only this user's mailbox, with standard
+        email delivery scanning and classification similar to receiving via SMTP
+      operationId: gmail.users.messages.import
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: query
+        name: deleted
+        description: Mark the email as permanently deleted (not TRASH) and only visible
+          in Google Vault to a Vault administrator
+      - in: query
+        name: internalDateSource
+        description: Source for Gmail's internal date of the message
+      - in: query
+        name: neverMarkSpam
+        description: Ignore the Gmail spam classifier decision and never mark this
+          email as SPAM in the mailbox
+      - in: query
+        name: processForCalendar
+        description: Process calendar invites in the email and add any extracted meetings
+          to the Google Calendar for this user
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/send:
+    post:
+      summary: Send Message
+      description: Sends the specified message to the recipients in the To, Cc, and
+        Bcc headers
+      operationId: gmail.users.messages.send
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/{id}:
+    delete:
+      summary: Delete Message
+      description: Immediately and permanently deletes the specified message
+      operationId: gmail.users.messages.delete
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the message to delete
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+    get:
+      summary: Get Message
+      description: Gets the specified message
+      operationId: gmail.users.messages.get
+      parameters:
+      - in: query
+        name: format
+        description: The format to return the message in
+      - in: path
+        name: id
+        description: The ID of the message to retrieve
+      - in: query
+        name: metadataHeaders
+        description: When given and format is METADATA, only include headers specified
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/{id}/modify:
+    post:
+      summary: Modify message
+      description: Modifies the labels on the specified message
+      operationId: gmail.users.messages.modify
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: id
+        description: The ID of the message to modify
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/{id}/trash:
+    post:
+      summary: Trash Message
+      description: Moves the specified message to the trash
+      operationId: gmail.users.messages.trash
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the message to Trash
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/{id}/untrash:
+    post:
+      summary: UnTrash Message
+      description: Removes the specified message from the trash
+      operationId: gmail.users.messages.untrash
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the message to remove from Trash
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/messages/{messageId}/attachments/{id}:
+    get:
+      summary: Get Attachments
+      description: Gets the specified message attachment
+      operationId: gmail.users.messages.attachments.get
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the attachment
+      - in: path
+        name: messageId
+        description: The ID of the message containing the attachment
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email
+  /{userId}/profile:
+    get:
+      summary: Get Profile
+      description: Gets the current user's Gmail profile
+      operationId: gmail.users.getProfile
+      parameters:
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - User
+  /{userId}/settings/autoForwarding:
+    get:
+      summary: Get Auto-Forwarding Settings
+      description: Gets the auto-forwarding setting for the specified account
+      operationId: gmail.users.settings.getAutoForwarding
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Settings
+    put:
+      summary: Update Auto-Forwarding Settings
+      description: Updates the auto-forwarding setting for the specified account
+      operationId: gmail.users.settings.updateAutoForwarding
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Settings
+  /{userId}/settings/filters:
+    get:
+      summary: Get Message Filters
+      description: Lists the message filters of a Gmail user
+      operationId: gmail.users.settings.filters.list
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Filters
+    post:
+      summary: Create Message Filters
+      description: Creates a filter
+      operationId: gmail.users.settings.filters.create
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Filters
+  /{userId}/settings/filters/{id}:
+    delete:
+      summary: Delete Message Filter
+      description: Deletes a filter
+      operationId: gmail.users.settings.filters.delete
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the filter to be deleted
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Filters
+    get:
+      summary: Get Message Filter
+      description: Gets a filter
+      operationId: gmail.users.settings.filters.get
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the filter to be fetched
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Filters
+  /{userId}/settings/forwardingAddresses:
+    get:
+      summary: Get Forward Addresses
+      description: Lists the forwarding addresses for the specified account
+      operationId: gmail.users.settings.forwardingAddresses.list
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Forwarding Address
+    post:
+      summary: Create Forward Addresse
+      description: Creates a forwarding address
+      operationId: gmail.users.settings.forwardingAddresses.create
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Forwarding Address
+  /{userId}/settings/forwardingAddresses/{forwardingEmail}:
+    delete:
+      summary: Delete Forward Address
+      description: Deletes the specified forwarding address and revokes any verification
+        that may have been required
+      operationId: gmail.users.settings.forwardingAddresses.delete
+      parameters:
+      - in: path
+        name: forwardingEmail
+        description: The forwarding address to be deleted
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Forwarding Address
+    get:
+      summary: GGetet Forward Address
+      description: Gets the specified forwarding address
+      operationId: gmail.users.settings.forwardingAddresses.get
+      parameters:
+      - in: path
+        name: forwardingEmail
+        description: The forwarding address to be retrieved
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Forwarding Address
+  /{userId}/settings/imap:
+    get:
+      summary: Gets IMAP Settings
+      description: Gets IMAP settings
+      operationId: gmail.users.settings.getImap
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - IMAP Settings
+    put:
+      summary: Update IMAP Setting
+      description: Updates IMAP settings
+      operationId: gmail.users.settings.updateImap
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - IMAP Settings
+  /{userId}/settings/pop:
+    get:
+      summary: Gets POP Settings
+      description: Gets POP settings
+      operationId: gmail.users.settings.getPop
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - ""
+    put:
+      summary: Update IMAP Setting
+      description: Updates POP settings
+      operationId: gmail.users.settings.updatePop
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - POP Settings
+  /{userId}/settings/sendAs:
+    get:
+      summary: Send As Alias
+      description: Lists the send-as aliases for the specified account
+      operationId: gmail.users.settings.sendAs.list
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+    post:
+      summary: Create Alias
+      description: Creates a custom "from" send-as alias
+      operationId: gmail.users.settings.sendAs.create
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+  /{userId}/settings/sendAs/{sendAsEmail}:
+    delete:
+      summary: Delete Alias
+      description: Deletes the specified send-as alias
+      operationId: gmail.users.settings.sendAs.delete
+      parameters:
+      - in: path
+        name: sendAsEmail
+        description: The send-as alias to be deleted
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+    get:
+      summary: Get Alias
+      description: Gets the specified send-as alias
+      operationId: gmail.users.settings.sendAs.get
+      parameters:
+      - in: path
+        name: sendAsEmail
+        description: The send-as alias to be retrieved
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+    patch:
+      summary: Update Alias
+      description: Updates a send-as alias
+      operationId: gmail.users.settings.sendAs.patch
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: sendAsEmail
+        description: The send-as alias to be updated
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+    put:
+      summary: Update Alias
+      description: Updates a send-as alias
+      operationId: gmail.users.settings.sendAs.update
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: sendAsEmail
+        description: The send-as alias to be updated
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Alias
+  /{userId}/settings/sendAs/{sendAsEmail}/smimeInfo:
+    get:
+      summary: Get S/MIME Configurations
+      description: Lists S/MIME configs for the specified send-as alias
+      operationId: gmail.users.settings.sendAs.smimeInfo.list
+      parameters:
+      - in: path
+        name: sendAsEmail
+        description: The email address that appears in the "From:" header for mail
+          sent using this alias
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - S/MIME Configuration
+    post:
+      summary: Create S/MIME Configurations
+      description: Insert (upload) the given S/MIME config for the specified send-as
+        alias
+      operationId: gmail.users.settings.sendAs.smimeInfo.insert
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: sendAsEmail
+        description: The email address that appears in the "From:" header for mail
+          sent using this alias
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - S/MIME Configuration
+  /{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}:
+    delete:
+      summary: Delete S/MIME Configurations
+      description: Deletes the specified S/MIME config for the specified send-as alias
+      operationId: gmail.users.settings.sendAs.smimeInfo.delete
+      parameters:
+      - in: path
+        name: id
+        description: The immutable ID for the SmimeInfo
+      - in: path
+        name: sendAsEmail
+        description: The email address that appears in the "From:" header for mail
+          sent using this alias
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - S/MIME Configuration
+    get:
+      summary: Get S/MIME Configuration
+      description: Gets the specified S/MIME config for the specified send-as alias
+      operationId: gmail.users.settings.sendAs.smimeInfo.get
+      parameters:
+      - in: path
+        name: id
+        description: The immutable ID for the SmimeInfo
+      - in: path
+        name: sendAsEmail
+        description: The email address that appears in the "From:" header for mail
+          sent using this alias
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - S/MIME Configuration
+  /{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault:
+    post:
+      summary: Create Default S/MIME Configurations
+      description: Sets the default S/MIME config for the specified send-as alias
+      operationId: gmail.users.settings.sendAs.smimeInfo.setDefault
+      parameters:
+      - in: path
+        name: id
+        description: The immutable ID for the SmimeInfo
+      - in: path
+        name: sendAsEmail
+        description: The email address that appears in the "From:" header for mail
+          sent using this alias
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - S/MIME Configuration
+  /{userId}/settings/sendAs/{sendAsEmail}/verify:
+    post:
+      summary: Send Verification Email
+      description: Sends a verification email to the specified send-as alias address
+      operationId: gmail.users.settings.sendAs.verify
+      parameters:
+      - in: path
+        name: sendAsEmail
+        description: The send-as alias to be verified
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Verification
+  /{userId}/settings/vacation:
+    get:
+      summary: Get Vacation Settings
+      description: Gets vacation responder settings
+      operationId: gmail.users.settings.getVacation
+      parameters:
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Vacation Settings
+    put:
+      summary: Update Vacation Settings
+      description: Updates vacation responder settings
+      operationId: gmail.users.settings.updateVacation
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: User's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Vacation Settings
+  /{userId}/stop:
+    post:
+      summary: Stop Push Notifications
+      description: Stop receiving push notifications for the given user mailbox
+      operationId: gmail.users.stop
+      parameters:
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Push Notification
+  /{userId}/threads:
+    get:
+      summary: Get Threads
+      description: Lists the threads in the user's mailbox
+      operationId: gmail.users.threads.list
+      parameters:
+      - in: query
+        name: includeSpamTrash
+        description: Include threads from SPAM and TRASH in the results
+      - in: query
+        name: labelIds
+        description: Only return threads with labels that match all of the specified
+          label IDs
+      - in: query
+        name: maxResults
+        description: Maximum number of threads to return
+      - in: query
+        name: pageToken
+        description: Page token to retrieve a specific page of results in the list
+      - in: query
+        name: q
+        description: Only return threads matching the specified query
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+  /{userId}/threads/{id}:
+    delete:
+      summary: Delete Threads
+      description: Immediately and permanently deletes the specified thread
+      operationId: gmail.users.threads.delete
+      parameters:
+      - in: path
+        name: id
+        description: ID of the Thread to delete
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+    get:
+      summary: Get Threads
+      description: Gets the specified thread
+      operationId: gmail.users.threads.get
+      parameters:
+      - in: query
+        name: format
+        description: The format to return the messages in
+      - in: path
+        name: id
+        description: The ID of the thread to retrieve
+      - in: query
+        name: metadataHeaders
+        description: When given and format is METADATA, only include headers specified
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+  /{userId}/threads/{id}/modify:
+    post:
+      summary: Modify Thread labels
+      description: Modifies the labels applied to the thread
+      operationId: gmail.users.threads.modify
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: id
+        description: The ID of the thread to modify
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+  /{userId}/threads/{id}/trash:
+    post:
+      summary: Trash Thread
+      description: Moves the specified thread to the trash
+      operationId: gmail.users.threads.trash
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the thread to Trash
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+  /{userId}/threads/{id}/untrash:
+    post:
+      summary: UnTrash Threat
+      description: Removes the specified thread from the trash
+      operationId: gmail.users.threads.untrash
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the thread to remove from Trash
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Email Thread
+  /{userId}/watch:
+    post:
+      summary: Send Push Notification
+      description: Set up or update a push notification watch on the given user mailbox
+      operationId: gmail.users.watch
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/holder'
+      - in: path
+        name: userId
+        description: The user's email address
+      responses:
+        200:
+          description: OK
+      tags:
+      - Push Notification
+definitions:
+  AutoForwarding:
+    properties:
+      disposition:
+        description: This is a default description.
+        type: post
+      emailAddress:
+        description: This is a default description.
+        type: post
+      enabled:
+        description: This is a default description.
+        type: post
+  BatchDeleteMessagesRequest:
+    properties:
+      ids:
+        description: This is a default description.
+        type: post
+  BatchModifyMessagesRequest:
+    properties:
+      addLabelIds:
+        description: This is a default description.
+        type: post
+      ids:
+        description: This is a default description.
+        type: post
+      removeLabelIds:
+        description: This is a default description.
+        type: post
+  Draft:
+    properties:
+      id:
+        description: This is a default description.
+        type: post
+  Filter:
+    properties:
+      id:
+        description: This is a default description.
+        type: post
+  FilterAction:
+    properties:
+      addLabelIds:
+        description: This is a default description.
+        type: post
+      forward:
+        description: This is a default description.
+        type: post
+      removeLabelIds:
+        description: This is a default description.
+        type: post
+  FilterCriteria:
+    properties:
+      excludeChats:
+        description: This is a default description.
+        type: post
+      from:
+        description: This is a default description.
+        type: post
+      hasAttachment:
+        description: This is a default description.
+        type: post
+      negatedQuery:
+        description: This is a default description.
+        type: post
+      query:
+        description: This is a default description.
+        type: post
+      size:
+        description: This is a default description.
+        type: post
+      sizeComparison:
+        description: This is a default description.
+        type: post
+      subject:
+        description: This is a default description.
+        type: post
+      to:
+        description: This is a default description.
+        type: post
+  ForwardingAddress:
+    properties:
+      forwardingEmail:
+        description: This is a default description.
+        type: post
+      verificationStatus:
+        description: This is a default description.
+        type: post
+  History:
+    properties:
+      id:
+        description: This is a default description.
+        type: post
+      labelsAdded:
+        description: This is a default description.
+        type: post
+      labelsRemoved:
+        description: This is a default description.
+        type: post
+      messages:
+        description: This is a default description.
+        type: post
+      messagesAdded:
+        description: This is a default description.
+        type: post
+      messagesDeleted:
+        description: This is a default description.
+        type: post
+  HistoryLabelAdded:
+    properties:
+      labelIds:
+        description: This is a default description.
+        type: post
+  HistoryLabelRemoved:
+    properties:
+      labelIds:
+        description: This is a default description.
+        type: post
+  HistoryMessageAdded:
+    properties: []
+  HistoryMessageDeleted:
+    properties: []
+  ImapSettings:
+    properties:
+      autoExpunge:
+        description: This is a default description.
+        type: post
+      enabled:
+        description: This is a default description.
+        type: post
+      expungeBehavior:
+        description: This is a default description.
+        type: post
+      maxFolderSize:
+        description: This is a default description.
+        type: post
+  Label:
+    properties:
+      id:
+        description: This is a default description.
+        type: post
+      labelListVisibility:
+        description: This is a default description.
+        type: post
+      messageListVisibility:
+        description: This is a default description.
+        type: post
+      messagesTotal:
+        description: This is a default description.
+        type: post
+      messagesUnread:
+        description: This is a default description.
+        type: post
+      name:
+        description: This is a default description.
+        type: post
+      threadsTotal:
+        description: This is a default description.
+        type: post
+      threadsUnread:
+        description: This is a default description.
+        type: post
+      type:
+        description: This is a default description.
+        type: post
+  ListDraftsResponse:
+    properties:
+      drafts:
+        description: This is a default description.
+        type: post
+      nextPageToken:
+        description: This is a default description.
+        type: post
+      resultSizeEstimate:
+        description: This is a default description.
+        type: post
+  ListFiltersResponse:
+    properties:
+      filter:
+        description: This is a default description.
+        type: post
+  ListForwardingAddressesResponse:
+    properties:
+      forwardingAddresses:
+        description: This is a default description.
+        type: post
+  ListHistoryResponse:
+    properties:
+      history:
+        description: This is a default description.
+        type: post
+      historyId:
+        description: This is a default description.
+        type: post
+      nextPageToken:
+        description: This is a default description.
+        type: post
+  ListLabelsResponse:
+    properties:
+      labels:
+        description: This is a default description.
+        type: post
+  ListMessagesResponse:
+    properties:
+      messages:
+        description: This is a default description.
+        type: post
+      nextPageToken:
+        description: This is a default description.
+        type: post
+      resultSizeEstimate:
+        description: This is a default description.
+        type: post
+  ListSendAsResponse:
+    properties:
+      sendAs:
+        description: This is a default description.
+        type: post
+  ListSmimeInfoResponse:
+    properties:
+      smimeInfo:
+        description: This is a default description.
+        type: post
+  ListThreadsResponse:
+    properties:
+      nextPageToken:
+        description: This is a default description.
+        type: post
+      resultSizeEstimate:
+        description: This is a default description.
+        type: post
+      threads:
+        description: This is a default description.
+        type: post
+  Message:
+    properties:
+      historyId:
+        description: This is a default description.
+        type: post
+      id:
+        description: This is a default description.
+        type: post
+      internalDate:
+        description: This is a default description.
+        type: post
+      labelIds:
+        description: This is a default description.
+        type: post
+      raw:
+        description: This is a default description.
+        type: post
+      sizeEstimate:
+        description: This is a default description.
+        type: post
+      snippet:
+        description: This is a default description.
+        type: post
+      threadId:
+        description: This is a default description.
+        type: post
+  MessagePart:
+    properties:
+      filename:
+        description: This is a default description.
+        type: post
+      headers:
+        description: This is a default description.
+        type: post
+      mimeType:
+        description: This is a default description.
+        type: post
+      partId:
+        description: This is a default description.
+        type: post
+      parts:
+        description: This is a default description.
+        type: post
+  MessagePartBody:
+    properties:
+      attachmentId:
+        description: This is a default description.
+        type: post
+      data:
+        description: This is a default description.
+        type: post
+      size:
+        description: This is a default description.
+        type: post
+  MessagePartHeader:
+    properties:
+      name:
+        description: This is a default description.
+        type: post
+      value:
+        description: This is a default description.
+        type: post
+  ModifyMessageRequest:
+    properties:
+      addLabelIds:
+        description: This is a default description.
+        type: post
+      removeLabelIds:
+        description: This is a default description.
+        type: post
+  ModifyThreadRequest:
+    properties:
+      addLabelIds:
+        description: This is a default description.
+        type: post
+      removeLabelIds:
+        description: This is a default description.
+        type: post
+  PopSettings:
+    properties:
+      accessWindow:
+        description: This is a default description.
+        type: post
+      disposition:
+        description: This is a default description.
+        type: post
+  Profile:
+    properties:
+      emailAddress:
+        description: This is a default description.
+        type: post
+      historyId:
+        description: This is a default description.
+        type: post
+      messagesTotal:
+        description: This is a default description.
+        type: post
+      threadsTotal:
+        description: This is a default description.
+        type: post
+  SendAs:
+    properties:
+      displayName:
+        description: This is a default description.
+        type: post
+      isDefault:
+        description: This is a default description.
+        type: post
+      isPrimary:
+        description: This is a default description.
+        type: post
+      replyToAddress:
+        description: This is a default description.
+        type: post
+      sendAsEmail:
+        description: This is a default description.
+        type: post
+      signature:
+        description: This is a default description.
+        type: post
+      treatAsAlias:
+        description: This is a default description.
+        type: post
+      verificationStatus:
+        description: This is a default description.
+        type: post
+  SmimeInfo:
+    properties:
+      encryptedKeyPassword:
+        description: This is a default description.
+        type: post
+      expiration:
+        description: This is a default description.
+        type: post
+      id:
+        description: This is a default description.
+        type: post
+      isDefault:
+        description: This is a default description.
+        type: post
+      issuerCn:
+        description: This is a default description.
+        type: post
+      pem:
+        description: This is a default description.
+        type: post
+      pkcs12:
+        description: This is a default description.
+        type: post
+  SmtpMsa:
+    properties:
+      host:
+        description: This is a default description.
+        type: post
+      password:
+        description: This is a default description.
+        type: post
+      port:
+        description: This is a default description.
+        type: post
+      securityMode:
+        description: This is a default description.
+        type: post
+      username:
+        description: This is a default description.
+        type: post
+  Thread:
+    properties:
+      historyId:
+        description: This is a default description.
+        type: post
+      id:
+        description: This is a default description.
+        type: post
+      messages:
+        description: This is a default description.
+        type: post
+      snippet:
+        description: This is a default description.
+        type: post
+  VacationSettings:
+    properties:
+      enableAutoReply:
+        description: This is a default description.
+        type: post
+      endTime:
+        description: This is a default description.
+        type: post
+      responseBodyHtml:
+        description: This is a default description.
+        type: post
+      responseBodyPlainText:
+        description: This is a default description.
+        type: post
+      responseSubject:
+        description: This is a default description.
+        type: post
+      restrictToContacts:
+        description: This is a default description.
+        type: post
+      restrictToDomain:
+        description: This is a default description.
+        type: post
+      startTime:
+        description: This is a default description.
+        type: post
+  WatchRequest:
+    properties:
+      labelFilterAction:
+        description: This is a default description.
+        type: post
+      labelIds:
+        description: This is a default description.
+        type: post
+      topicName:
+        description: This is a default description.
+        type: post
+  WatchResponse:
+    properties:
+      expiration:
+        description: This is a default description.
+        type: post
+      historyId:
+        description: This is a default description.
+        type: post

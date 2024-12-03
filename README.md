@@ -55,7 +55,8 @@ Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps
    [
      "openid",
      "https://mail.google.com/",
-     "https://www.googleapis.com/auth/calendar"
+     "https://www.googleapis.com/auth/calendar",
+     "https://www.googleapis.com/auth/userinfo.email"
    ]
 
 3. Then create a `.gauth.json` in your working directory:
