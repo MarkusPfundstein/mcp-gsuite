@@ -9,8 +9,14 @@ from mcp.types import (
 from . import gmail
 import json
 from . import toolhandler
+import base64
 
-
+def decode_base64_data(file_data):
+    standard_base64_data = file_data.replace("-", "+").replace("_", "/")
+    missing_padding = len(standard_base64_data) % 4
+    if missing_padding:
+        standard_base64_data += '=' * (4 - missing_padding)
+    return base64.b64decode(standard_base64_data, validate=True)
 
 class QueryEmailsToolHandler(toolhandler.ToolHandler):
     def __init__(self):
@@ -67,7 +73,7 @@ class QueryEmailsToolHandler(toolhandler.ToolHandler):
                 text=json.dumps(emails, indent=2)
             )
         ]
-    
+
 class GetEmailByIdToolHandler(toolhandler.ToolHandler):
     def __init__(self):
         super().__init__("get_gmail_email")
@@ -75,7 +81,7 @@ class GetEmailByIdToolHandler(toolhandler.ToolHandler):
     def get_tool_description(self) -> Tool:
         return Tool(
             name=self.name,
-            description="Retrieves a complete Gmail email message by its ID, including the full message body.",
+            description="Retrieves a complete Gmail email message by its ID, including the full message body and attachment IDs.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -97,7 +103,7 @@ class GetEmailByIdToolHandler(toolhandler.ToolHandler):
         if not user_id:
             raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
         gmail_service = gmail.GmailService(user_id=user_id)
-        email = gmail_service.get_email_by_id(args["email_id"])
+        email, attachments = gmail_service.get_email_by_id_with_attachments(args["email_id"])
 
         if email is None:
             return [
@@ -107,13 +113,69 @@ class GetEmailByIdToolHandler(toolhandler.ToolHandler):
                 )
             ]
 
+        email["attachments"] = attachments
+
         return [
             TextContent(
                 type="text",
                 text=json.dumps(email, indent=2)
             )
         ]
-    
+
+class BulkGetEmailsByIdsToolHandler(toolhandler.ToolHandler):
+    def __init__(self):
+        super().__init__("bulk_get_gmail_emails")
+
+    def get_tool_description(self) -> Tool:
+        return Tool(
+            name=self.name,
+            description="Retrieves multiple Gmail email messages by their IDs in a single request, including the full message bodies and attachment IDs.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "email_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of Gmail message IDs to retrieve"
+                    }
+                },
+                "required": ["email_ids", toolhandler.USER_ID_ARG]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "email_ids" not in args:
+            raise RuntimeError("Missing required argument: email_ids")
+
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
+        
+        results = []
+        for email_id in args["email_ids"]:
+            email, attachments = gmail_service.get_email_by_id_with_attachments(email_id)
+            if email is not None:
+                email["attachments"] = attachments
+                results.append(email)
+
+        if not results:
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Failed to retrieve any emails from the provided IDs"
+                )
+            ]
+
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(results, indent=2)
+            )
+        ]
 
 class CreateDraftToolHandler(toolhandler.ToolHandler):
     def __init__(self):
@@ -185,7 +247,7 @@ class CreateDraftToolHandler(toolhandler.ToolHandler):
                 text=json.dumps(draft, indent=2)
             )
         ]
-    
+
 class DeleteDraftToolHandler(toolhandler.ToolHandler):
     def __init__(self):
         super().__init__("delete_gmail_draft")
@@ -223,7 +285,7 @@ class DeleteDraftToolHandler(toolhandler.ToolHandler):
                 text="Successfully deleted draft" if success else f"Failed to delete draft with ID: {args['draft_id']}"
             )
         ]
-    
+
 class ReplyEmailToolHandler(toolhandler.ToolHandler):
     def __init__(self):
         super().__init__("reply_gmail_email")
@@ -305,3 +367,187 @@ class ReplyEmailToolHandler(toolhandler.ToolHandler):
                 text=json.dumps(result, indent=2)
             )
         ]
+
+class GetAttachmentToolHandler(toolhandler.ToolHandler):
+    def __init__(self):
+        super().__init__("get_gmail_attachment")
+
+    def get_tool_description(self) -> Tool:
+        return Tool(
+            name=self.name,
+            description="Retrieves a Gmail attachment by its ID.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "message_id": {
+                        "type": "string",
+                        "description": "The ID of the Gmail message containing the attachment"
+                    },
+                    "attachment_id": {
+                        "type": "string",
+                        "description": "The ID of the attachment to retrieve"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "description": "The MIME type of the attachment"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "description": "The filename of the attachment"
+                    },
+                    "save_to_disk": {
+                        "type": "string",
+                        "description": "The fullpath to save the attachment to disk. If not provided, the attachment is returned as a resource."
+                    }
+                },
+                "required": ["message_id", "attachment_id", "mime_type", "filename", toolhandler.USER_ID_ARG]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "message_id" not in args:
+            raise RuntimeError("Missing required argument: message_id")
+        if "attachment_id" not in args:
+            raise RuntimeError("Missing required argument: attachment_id")
+        if "mime_type" not in args:
+            raise RuntimeError("Missing required argument: mime_type")
+        if "filename" not in args:
+            raise RuntimeError("Missing required argument: filename")
+        filename = args["filename"]
+        mime_type = args["mime_type"]
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+        gmail_service = gmail.GmailService(user_id=user_id)
+        attachment_data = gmail_service.get_attachment(args["message_id"], args["attachment_id"])
+
+        if attachment_data is None:
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Failed to retrieve attachment with ID: {args['attachment_id']} from message: {args['message_id']}"
+                )
+            ]
+
+        file_data = attachment_data["data"]
+        attachment_url = f"attachment://gmail/{args['message_id']}/{args['attachment_id']}/{filename}"
+        if args.get("save_to_disk"):
+            decoded_data = decode_base64_data(file_data)
+            with open(args["save_to_disk"], "wb") as f:
+                f.write(decoded_data)
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Attachment saved to disk: {args['save_to_disk']}"
+                )
+            ]
+        return [
+            EmbeddedResource(
+                type="resource",
+                resource={
+                    "blob": file_data,
+                    "uri": attachment_url,
+                    "mimeType": mime_type,
+                },
+            )
+        ]
+
+class BulkSaveAttachmentsToolHandler(toolhandler.ToolHandler):
+    def __init__(self):
+        super().__init__("bulk_save_gmail_attachments")
+
+    def get_tool_description(self) -> Tool:
+        return Tool(
+            name=self.name,
+            description="Saves multiple Gmail attachments to disk by their message IDs and attachment IDs in a single request.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "__user_id__": self.get_user_id_arg_schema(),
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "message_id": {
+                                    "type": "string",
+                                    "description": "ID of the Gmail message containing the attachment"
+                                },
+                                "part_id": {
+                                    "type": "string", 
+                                    "description": "ID of the part containing the attachment"
+                                },
+                                "save_path": {
+                                    "type": "string",
+                                    "description": "Path where the attachment should be saved"
+                                }
+                            },
+                            "required": ["message_id", "part_id", "save_path"]
+                        }
+                    }
+                },
+                "required": ["attachments", toolhandler.USER_ID_ARG]
+            }
+        )
+
+    def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
+        if "attachments" not in args:
+            raise RuntimeError("Missing required argument: attachments")
+
+        user_id = args.get(toolhandler.USER_ID_ARG)
+        if not user_id:
+            raise RuntimeError(f"Missing required argument: {toolhandler.USER_ID_ARG}")
+
+        gmail_service = gmail.GmailService(user_id=user_id)
+        results = []
+
+        for attachment_info in args["attachments"]:
+            # get attachment data from message_id and part_id
+            message, attachments = gmail_service.get_email_by_id_with_attachments(
+                attachment_info["message_id"]
+            )
+            if message is None:
+                results.append(
+                    TextContent(
+                        type="text",
+                        text=f"Failed to retrieve message with ID: {attachment_info['message_id']}"
+                    )
+                )
+                continue
+            # get attachment_id from part_id
+            attachment_id = attachments[attachment_info["part_id"]]["attachmentId"]
+            attachment_data = gmail_service.get_attachment(
+                attachment_info["message_id"], 
+                attachment_id
+            )
+            if attachment_data is None:
+                results.append(
+                    TextContent(
+                        type="text",
+                        text=f"Failed to retrieve attachment with ID: {attachment_id} from message: {attachment_info['message_id']}"
+                    )
+                )
+                continue
+
+            file_data = attachment_data["data"]
+            try:    
+                decoded_data = decode_base64_data(file_data)
+                with open(attachment_info["save_path"], "wb") as f:
+                    f.write(decoded_data)
+                results.append(
+                    TextContent(
+                        type="text",
+                        text=f"Attachment saved to: {attachment_info['save_path']}"
+                    )
+                )
+            except Exception as e:
+                results.append(
+                    TextContent(
+                        type="text",
+                        text=f"Failed to save attachment to {attachment_info['save_path']}: {str(e)}"
+                    )
+                )
+                continue
+
+        return results

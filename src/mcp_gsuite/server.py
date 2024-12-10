@@ -88,7 +88,7 @@ def setup_oauth2(user_id: str):
 
         # this call refreshes access token
         user_info = gauth.get_user_info(credentials=credentials)
-        logging.error(f"User info: {json.dumps(user_info)}")
+        #logging.error(f"User info: {json.dumps(user_info)}")
         gauth.store_credentials(credentials=credentials, user_id=user_id)
 
 
@@ -111,6 +111,9 @@ add_tool_handler(tools_gmail.GetEmailByIdToolHandler())
 add_tool_handler(tools_gmail.CreateDraftToolHandler())
 add_tool_handler(tools_gmail.DeleteDraftToolHandler())
 add_tool_handler(tools_gmail.ReplyEmailToolHandler())
+add_tool_handler(tools_gmail.GetAttachmentToolHandler())
+add_tool_handler(tools_gmail.BulkGetEmailsByIdsToolHandler())
+add_tool_handler(tools_gmail.BulkSaveAttachmentsToolHandler())
 
 add_tool_handler(tools_calendar.ListCalendarsToolHandler())
 add_tool_handler(tools_calendar.GetCalendarEventsToolHandler())

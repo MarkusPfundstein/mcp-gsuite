@@ -255,7 +255,7 @@ wheels = [
 
 [[package]]
 name = "mcp-gsuite"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -279,7 +279,7 @@ requires-dist = [
     { name = "google-api-python-client", specifier = ">=2.154.0" },
     { name = "httplib2", specifier = ">=0.22.0" },
     { name = "mcp", specifier = ">=1.1.0" },
-    { name = "oauth2client", specifier = ">=4.1.3" },
+    { name = "oauth2client", specifier = "==4.1.3" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "pytz", specifier = ">=2024.2" },
     { name = "requests", specifier = ">=2.32.3" },

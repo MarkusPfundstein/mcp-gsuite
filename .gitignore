@@ -11,3 +11,5 @@ wheels/
 .env
 .gauth.json
 oauth2creds.json
+.accounts.json
+.oauth2.*.json

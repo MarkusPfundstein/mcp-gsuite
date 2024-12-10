@@ -4,6 +4,7 @@ import logging
 import base64
 import traceback
 from email.mime.text import MIMEText
+from typing import Tuple
 
 
 class GmailService():
@@ -164,16 +165,16 @@ class GmailService():
             logging.error(traceback.format_exc())
             return []
         
-    def get_email_by_id(self, email_id: str) -> dict | None:
+    def get_email_by_id_with_attachments(self, email_id: str) -> Tuple[dict, dict] | Tuple[None, dict]:
         """
-        Fetch and parse a complete email message by its ID.
+        Fetch and parse a complete email message by its ID including attachment IDs.
         
         Args:
             email_id (str): The Gmail message ID to retrieve
         
         Returns:
-            dict: Complete parsed email message including body
-            None: If retrieval or parsing fails
+            Tuple[dict, list]: Complete parsed email message including body and list of attachment IDs
+            Tuple[None, list]: If retrieval or parsing fails, returns None for email and empty list for attachment IDs
         """
         try:
             # Fetch the complete message by ID
@@ -183,12 +184,31 @@ class GmailService():
             ).execute()
             
             # Parse the message with body included
-            return self._parse_message(txt=message, parse_body=True)
+            parsed_email = self._parse_message(txt=message, parse_body=True)
+
+            if parsed_email is None:
+                return None, []
+
+            attachments = {}
+            for part in message["payload"]["parts"]:
+                if "attachmentId" in part["body"]:
+                    attachment_id = part["body"]["attachmentId"]
+                    part_id = part["partId"]
+                    attachment = {
+                        "filename": part["filename"],
+                        "mimeType": part["mimeType"],
+                        "attachmentId": attachment_id,
+                        "partId": part_id
+                    }
+                    attachments[part_id] = attachment
+
+
+            return parsed_email, attachments
             
         except Exception as e:
             logging.error(f"Error retrieving email {email_id}: {str(e)}")
             logging.error(traceback.format_exc())
-            return None
+            return None, []
         
     def create_draft(self, to: str, subject: str, body: str, cc: list[str] | None = None) -> dict | None:
         """
@@ -332,5 +352,33 @@ class GmailService():
             
         except Exception as e:
             logging.error(f"Error {'sending' if send else 'drafting'} reply: {str(e)}")
+            logging.error(traceback.format_exc())
+            return None
+        
+    def get_attachment(self, message_id: str, attachment_id: str) -> dict | None:
+        """
+        Retrieves a Gmail attachment by its ID.
+        
+        Args:
+            message_id (str): The ID of the Gmail message containing the attachment
+            attachment_id (str): The ID of the attachment to retrieve
+        
+        Returns:
+            dict: Attachment data including filename and base64-encoded content
+            None: If retrieval fails
+        """
+        try:
+            attachment = self.service.users().messages().attachments().get(
+                userId='me',
+                messageId=message_id, 
+                id=attachment_id
+            ).execute()
+            return {
+                "size": attachment.get("size"),
+                "data": attachment.get("data")
+            }
+            
+        except Exception as e:
+            logging.error(f"Error retrieving attachment {attachment_id} from message {message_id}: {str(e)}")
             logging.error(traceback.format_exc())
             return None
