@@ -11,8 +11,23 @@ from google.auth.transport.requests import Request
 import os
 import pydantic
 import json
+import argparse
 
-CLIENTSECRETS_LOCATION = './.gauth.json'
+
+def get_gauth_file() -> str:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--gauth-file",
+        type=str,
+        default="./.gauth.json",
+        help="Path to client secrets file",
+    )
+    args, _ = parser.parse_known_args()
+    return args.gauth_file
+
+
+CLIENTSECRETS_LOCATION = get_gauth_file()
+
 REDIRECT_URI = 'http://localhost:4100/code'
 SCOPES = [
     "openid",
@@ -20,6 +35,7 @@ SCOPES = [
     "https://mail.google.com/",
     "https://www.googleapis.com/auth/calendar"
 ]
+
 
 class AccountInfo(pydantic.BaseModel):
 
@@ -33,8 +49,22 @@ class AccountInfo(pydantic.BaseModel):
     def to_description(self):
         return f"""Account for email: {self.email} of type: {self.account_type}. Extra info for: {self.extra_info}"""
 
+
+def get_accounts_file() -> str:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--accounts-file",
+        type=str,
+        default="./.accounts.json",
+        help="Path to accounts configuration file",
+    )
+    args, _ = parser.parse_known_args()
+    return args.accounts_file
+
+
 def get_account_info() -> list[AccountInfo]:
-    with open('./.accounts.json') as f:
+    accounts_file = get_accounts_file()
+    with open(accounts_file) as f:
         data = json.load(f)
         accounts = data.get("accounts", [])
         return [AccountInfo.model_validate(acc) for acc in accounts]
@@ -63,8 +93,23 @@ class NoRefreshTokenException(GetCredentialsException):
 class NoUserIdException(Exception):
   """Error raised when no user ID could be retrieved."""
 
+
+def get_credentials_dir() -> str:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--credentials-dir",
+        type=str,
+        default=".",
+        help="Directory to store OAuth2 credentials",
+    )
+    args, _ = parser.parse_known_args()
+    return args.credentials_dir
+
+
 def _get_credential_filename(user_id: str) -> str:
-    return f'./.oauth2.{user_id}.json'
+    creds_dir = get_credentials_dir()
+    return os.path.join(creds_dir, f".oauth2.{user_id}.json")
+
 
 def get_stored_credentials(user_id: str) -> OAuth2Credentials | None:
     """Retrieved stored credentials for the provided user ID.
@@ -92,18 +137,12 @@ def get_stored_credentials(user_id: str) -> OAuth2Credentials | None:
 
 
 def store_credentials(credentials: OAuth2Credentials, user_id: str):
-    """Store OAuth 2.0 credentials in the application's database.
-
-    This function stores the provided OAuth 2.0 credentials using the user ID as
-    key.
-
-    Args:
-    user_id: User's ID.
-    credentials: OAuth 2.0 credentials to store.
-    """
+    """Store OAuth 2.0 credentials in the specified directory."""
+    cred_file_path = _get_credential_filename(user_id=user_id)
+    os.makedirs(os.path.dirname(cred_file_path), exist_ok=True)
     
     data = credentials.to_json()
-    with open(_get_credential_filename(user_id=user_id), 'w') as f:
+    with open(cred_file_path, "w") as f:
         f.write(data)
 
 

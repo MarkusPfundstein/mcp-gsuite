@@ -7,39 +7,39 @@ MCP server to interact with Google produts.
 Right now, this MCP server supports Gmail and Calendar integration with the following capabilities:
 
 1. General
-- Multiple google accounts
+* Multiple google accounts
 
 2. Gmail
-- Get your Gmail user information
-- Query emails with flexible search (e.g., unread, from specific senders, date ranges, with attachments)
-- Retrieve complete email content by ID
-- Create new draft emails with recipients, subject, body and CC options
-- Delete draft emails
-- Reply to existing emails (can either send immediately or save as draft)
+* Get your Gmail user information
+* Query emails with flexible search (e.g., unread, from specific senders, date ranges, with attachments)
+* Retrieve complete email content by ID
+* Create new draft emails with recipients, subject, body and CC options
+* Delete draft emails
+* Reply to existing emails (can either send immediately or save as draft)
 
 3. Calendar
-- Manage multiple calendars
-- Get calendar events within specified time ranges
-- Create calendar events with:
-  - Title, start/end times
-  - Optional location and description
-  - Optional attendees
-  - Custom timezone support
-  - Notification preferences
-- Delete calendar events
+* Manage multiple calendars
+* Get calendar events within specified time ranges
+* Create calendar events with:
+  + Title, start/end times
+  + Optional location and description
+  + Optional attendees
+  + Custom timezone support
+  + Notification preferences
+* Delete calendar events
 
 Example prompts you can try:
 
-- Retrieve my latest unread messages
-- Search my emails from the Scrum Master
-- Retrieve all emails from accounting
-- Take the email about ABC and summarize it
-- Write a nice response to Alice's last email and upload a draft.
-- Reply to Bob's email with a Thank you note. Store it as draft
+* Retrieve my latest unread messages
+* Search my emails from the Scrum Master
+* Retrieve all emails from accounting
+* Take the email about ABC and summarize it
+* Write a nice response to Alice's last email and upload a draft.
+* Reply to Bob's email with a Thank you note. Store it as draft
 
-- What do I have on my agenda tomorrow?
-- Check my private account's Family agenda for next week
-- I need to plan an event with Tim for 2hrs next week. Suggest some time slots.
+* What do I have on my agenda tomorrow?
+* Check my private account's Family agenda for next week
+* I need to plan an event with Tim for 2hrs next week. Suggest some time slots.
 
 ## Quickstart
 
@@ -59,7 +59,9 @@ Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps
    - Add authorized redirect URIs (include `http://localhost:4100/code` for local development)
 
 2. Required OAuth2 Scopes:
-   ```json
+   
+
+```json
    [
      "openid",
      "https://mail.google.com/",
@@ -97,7 +99,7 @@ Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps
 
 You can specifiy multiple accounts. Make sure they have access in your Google Auth app. The `extra_info` field is especially interesting as you can add info here that you want to tell the AI about the account (e.g. whether it has a specific agenda)
 
-Note: When you first execute one of the tools for a specific account, a browser will open, redirect you to Google and ask for your credentials, scope, etc. After a successful login, it stores the credentials in a local file called `.oauth.{email}.json`. Once you are authorized, the refresh token will be used.
+Note: When you first execute one of the tools for a specific account, a browser will open, redirect you to Google and ask for your credentials, scope, etc. After a successful login, it stores the credentials in a local file called `.oauth.{email}.json` . Once you are authorized, the refresh token will be used.
 
 #### Claude Desktop
 
@@ -108,6 +110,7 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 <details>
   <summary>Development/Unpublished Servers Configuration</summary>
   
+
 ```json
 {
   "mcpServers": {
@@ -123,11 +126,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
   }
 }
 ```
+
 </details>
 
 <details>
   <summary>Published Servers Configuration</summary>
   
+
 ```json
 {
   "mcpServers": {
@@ -140,7 +145,26 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
   }
 }
 ```
+
 </details>
+
+### Configuration Options
+
+The MCP server can be configured with several command-line options to specify custom paths for authentication and account information:
+
+* `--gauth-file`: Specifies the path to the `.gauth.json` file containing OAuth2 client configuration. Default is `./.gauth.json`.
+* `--accounts-file`: Specifies the path to the `.accounts.json` file containing information about the Google accounts. Default is `./.accounts.json`.
+* `--credentials-dir`: Specifies the directory where OAuth credentials are stored after successful authentication. Default is the current working directory with a subdirectory for each account as `.oauth.{email}.json`.
+
+These options allow for flexibility in managing different environments or multiple sets of credentials and accounts, especially useful in development and testing scenarios.
+
+Example usage:
+
+```bash
+uv run mcp-gsuite --gauth-file /path/to/custom/.gauth.json --accounts-file /path/to/custom/.accounts.json --credentials-dir /path/to/custom/credentials
+```
+
+This configuration is particularly useful when you have multiple instances of the server running with different configurations or when deploying to environments where the default paths are not suitable.
 
 ## Development
 
@@ -149,11 +173,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 To prepare the package for distribution:
 
 1. Sync dependencies and update lockfile:
+
 ```bash
 uv sync
 ```
 
 2. Build package distributions:
+
 ```bash
 uv build
 ```
@@ -161,20 +187,21 @@ uv build
 This will create source and wheel distributions in the `dist/` directory.
 
 3. Publish to PyPI:
+
 ```bash
 uv publish
 ```
 
 Note: You'll need to set PyPI credentials via environment variables or command flags:
-- Token: `--token` or `UV_PUBLISH_TOKEN`
-- Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
+* Token: `--token` or `UV_PUBLISH_TOKEN`
+* Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
 
 ### Debugging
 
 Since MCP servers run over stdio, debugging can be challenging. For the best debugging
 experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
 
-You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
+You can launch the MCP Inspector via [ `npm` ](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
 npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-gsuite run mcp-gsuite
