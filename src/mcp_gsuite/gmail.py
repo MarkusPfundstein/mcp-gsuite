@@ -190,7 +190,7 @@ class GmailService():
                 return None, []
 
             attachments = {}
-            for part in message["payload"]["parts"]:
+            for part in message["payload"].get("parts", []):
                 if "attachmentId" in part["body"]:
                     attachment_id = part["body"]["attachmentId"]
                     part_id = part["partId"]
