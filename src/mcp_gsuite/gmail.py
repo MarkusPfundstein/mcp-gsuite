@@ -93,6 +93,12 @@ class GmailService():
                 if data:
                     return base64.urlsafe_b64decode(data).decode('utf-8')
             
+            # For single part text/html messages
+            if payload.get('mimeType') == 'text/html':
+                data = payload.get('body', {}).get('data')
+                if data:
+                    return base64.urlsafe_b64decode(data).decode('utf-8')
+            
             # For multipart messages (both alternative and related)
             if payload.get('mimeType', '').startswith('multipart/'):
                 parts = payload.get('parts', [])
@@ -187,28 +193,42 @@ class GmailService():
             parsed_email = self._parse_message(txt=message, parse_body=True)
 
             if parsed_email is None:
-                return None, []
+                return None, {}
 
             attachments = {}
-            for part in message["payload"]["parts"]:
-                if "attachmentId" in part["body"]:
-                    attachment_id = part["body"]["attachmentId"]
-                    part_id = part["partId"]
+            # Check if 'parts' exists in payload before trying to access it
+            if "payload" in message and "parts" in message["payload"]:
+                for part in message["payload"]["parts"]:
+                    if "body" in part and "attachmentId" in part["body"]:
+                        attachment_id = part["body"]["attachmentId"]
+                        part_id = part["partId"]
+                        attachment = {
+                            "filename": part["filename"],
+                            "mimeType": part["mimeType"],
+                            "attachmentId": attachment_id,
+                            "partId": part_id
+                        }
+                        attachments[part_id] = attachment
+            else:
+                # Handle case when there are no parts (single part message)
+                logging.info(f"Email {email_id} does not have 'parts' in payload (likely single part message)")
+                if "payload" in message and "body" in message["payload"] and "attachmentId" in message["payload"]["body"]:
+                    # Handle potential attachment in single part message
+                    attachment_id = message["payload"]["body"]["attachmentId"]
                     attachment = {
-                        "filename": part["filename"],
-                        "mimeType": part["mimeType"],
+                        "filename": message["payload"].get("filename", "attachment"),
+                        "mimeType": message["payload"].get("mimeType", "application/octet-stream"),
                         "attachmentId": attachment_id,
-                        "partId": part_id
+                        "partId": "0"
                     }
-                    attachments[part_id] = attachment
-
+                    attachments["0"] = attachment
 
             return parsed_email, attachments
             
         except Exception as e:
             logging.error(f"Error retrieving email {email_id}: {str(e)}")
             logging.error(traceback.format_exc())
-            return None, []
+            return None, {}
         
     def create_draft(self, to: str, subject: str, body: str, cc: list[str] | None = None) -> dict | None:
         """
