@@ -72,8 +72,9 @@ To allow MCP to access your Gmail accounts, you need to configure two things:
         "token_uri": "https://oauth2.googleapis.com/token"
     }
 }
+```
 
-(Optionally) use the `--gauth-file` to point to your `.gauth.json` file.
+* (Optional) Use the `--gauth-file` to point to your `.gauth.json` file.
 
 Follow these steps to set up authentication:
 
@@ -116,13 +117,13 @@ Follow these steps to set up authentication:
 }
 ```
 
-(Optionally), use the `--accounts-file` flag to point to your `accounts.json` file.
+* (Optional) Use the `--accounts-file` flag to point to your `accounts.json` file.
 
 You can specifiy multiple accounts. Make sure they have access in your Google Auth app. The `extra_info` field is especially interesting as you can add info here that you want to tell the AI about the account (e.g. whether it has a specific agenda)
 
 Note: When you first execute one of the tools for a specific account, a browser will open, redirect you to Google and ask for your credentials, scope, etc. After a successful login, it stores the credentials in a local file called `.oauth.{email}.json` . Once you are authorized, the refresh token will be used.
 
-3. Optionally, you can configure a credentials directory using the following option:
+3. (Optional) You can configure a credentials directory using the following option:
 * `--credentials-dir`: Specifies the directory where OAuth credentials are stored after successful authentication. The default location is the current working directory, with credentials stored in subdirectories named `.oauth.{email}.json` for each account.
 
 Example usage:
@@ -135,6 +136,8 @@ These flags are particularly useful when you have multiple instances of the serv
 
 
 #### Claude Desktop
+
+See [this youtube link](https://www.youtube.com/watch?v=wxCCzo9dGj0&t=82s&ab_channel=WesHigbee) on how to configure Claude Desktop to use the MCP server.
 
 On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 
