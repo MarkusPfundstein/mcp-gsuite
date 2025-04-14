@@ -42,7 +42,6 @@ class QueryEmailsToolHandler(toolhandler.ToolHandler):
                             - 'newer_than:2d' for emails from last 2 days
                             - 'has:attachment' for emails with attachments
                             If not provided, returns recent emails without filtering.""",
-                        "required": False
                     },
                     "max_results": {
                         "type": "integer",
