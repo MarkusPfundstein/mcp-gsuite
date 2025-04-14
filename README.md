@@ -48,7 +48,7 @@ Example prompts you can try:
 
 ### Install
 
-### Installing via Smithery
+#### Option 1: Installing via Smithery
 
 To install mcp-gsuite for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-gsuite):
 
@@ -56,32 +56,11 @@ To install mcp-gsuite for Claude Desktop automatically via [Smithery](https://sm
 npx -y @smithery/cli install mcp-gsuite --client claude
 ```
 
-#### Oauth 2
+#### Option 2: Manual via OAuth2
 
-Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps to set up authentication:
+To allow MCP to access your Gmail accounts, you need to configure two things:
 
-1. Create OAuth2 Credentials:
-   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select an existing one
-   - Enable the Gmail API and Google Calendar API for your project
-   - Go to "Credentials" → "Create Credentials" → "OAuth client ID"
-   - Select "Desktop app" or "Web application" as the application type
-   - Configure the OAuth consent screen with required information
-   - Add authorized redirect URIs (include `http://localhost:4100/code` for local development)
-
-2. Required OAuth2 Scopes:
-   
-
-```json
-   [
-     "openid",
-     "https://mail.google.com/",
-     "https://www.googleapis.com/auth/calendar",
-     "https://www.googleapis.com/auth/userinfo.email"
-   ]
-```
-
-3. Then create a `.gauth.json` in your working directory with client
+1. Enable the Google Workspace API on a cloud project, download the credentials, and configure the callback endpoint correctly. This is done through the `.gauth.json` file, which you can download from the Google Cloud Console (see configuration steps below).
 
 ```json
 {
@@ -95,7 +74,36 @@ Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps
 }
 ```
 
-4. Create a `.accounts.json` file with account information
+* (Optional) Use the `--gauth-file` to point to your `.gauth.json` file.
+
+Follow these steps to set up authentication:
+
+  a. Create OAuth2 Credentials:
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/)
+    - Create a new project or select an existing one
+    - Enable the Gmail API and Google Calendar API for your project
+    - Go to "Credentials" → "Create Credentials" → "OAuth client ID"
+    - Select "Desktop app" or "Web application" as the application type
+    - Configure the OAuth consent screen with required information
+    - Add authorized redirect URIs (include `http://localhost:4100/code` for local development)
+
+  b. Configure required OAuth2 scopes:
+    
+
+  ```json
+    [
+      "openid",
+      "https://mail.google.com/",
+      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  ```
+
+  c. Download
+
+  ![gauth.json](https://github.com/user-attachments/assets/5a31ef43-dea7-4f45-b4f9-fdb72471864d)
+
+2. The second step is to specify which accounts to grant access to via browser authentication. This is configured in the `accounts.json` file, which you create manually. In this file, you specify the email addresses you want to grant access to, along with optional account types and any additional information you'd like to include.
 
 ```json
 {
@@ -109,11 +117,27 @@ Google Workspace (G Suite) APIs require OAuth2 authorization. Follow these steps
 }
 ```
 
+* (Optional) Use the `--accounts-file` flag to point to your `accounts.json` file.
+
 You can specifiy multiple accounts. Make sure they have access in your Google Auth app. The `extra_info` field is especially interesting as you can add info here that you want to tell the AI about the account (e.g. whether it has a specific agenda)
 
 Note: When you first execute one of the tools for a specific account, a browser will open, redirect you to Google and ask for your credentials, scope, etc. After a successful login, it stores the credentials in a local file called `.oauth.{email}.json` . Once you are authorized, the refresh token will be used.
 
+3. (Optional) You can configure a credentials directory using the following option:
+* `--credentials-dir`: Specifies the directory where OAuth credentials are stored after successful authentication. The default location is the current working directory, with credentials stored in subdirectories named `.oauth.{email}.json` for each account.
+
+Example usage:
+
+```bash
+uv run mcp-gsuite --gauth-file /path/to/custom/.gauth.json --accounts-file /path/to/custom/.accounts.json --credentials-dir /path/to/custom/credentials
+```
+
+These flags are particularly useful when you have multiple instances of the server running with different configurations or when deploying to environments where the default paths are not suitable.
+
+
 #### Claude Desktop
+
+See [this youtube link](https://www.youtube.com/watch?v=wxCCzo9dGj0&t=82s&ab_channel=WesHigbee) on how to configure Claude Desktop to use the MCP server.
 
 On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 
@@ -187,23 +211,7 @@ Note: You can also use the `uv run mcp-gsuite --accounts-file /path/to/custom/.a
 
 </details>
 
-### Configuration Options
 
-The MCP server can be configured with several command-line options to specify custom paths for authentication and account information:
-
-* `--gauth-file`: Specifies the path to the `.gauth.json` file containing OAuth2 client configuration. Default is `./.gauth.json`.
-* `--accounts-file`: Specifies the path to the `.accounts.json` file containing information about the Google accounts. Default is `./.accounts.json`.
-* `--credentials-dir`: Specifies the directory where OAuth credentials are stored after successful authentication. Default is the current working directory with a subdirectory for each account as `.oauth.{email}.json`.
-
-These options allow for flexibility in managing different environments or multiple sets of credentials and accounts, especially useful in development and testing scenarios.
-
-Example usage:
-
-```bash
-uv run mcp-gsuite --gauth-file /path/to/custom/.gauth.json --accounts-file /path/to/custom/.accounts.json --credentials-dir /path/to/custom/credentials
-```
-
-This configuration is particularly useful when you have multiple instances of the server running with different configurations or when deploying to environments where the default paths are not suitable.
 
 ## Development
 
