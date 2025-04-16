@@ -51,6 +51,7 @@ class OauthListener(BaseHTTPRequestHandler):
 
         
 
+
 load_dotenv()
 
 from . import tools_gmail
@@ -72,8 +73,7 @@ def start_auth_flow(user_id: str):
         import webbrowser
         webbrowser.open(auth_url)
 
-    # start server for code callback
-    server_address = ('', 4100)
+    server_address = ('', gauth.extract_redirect_uri_port())
     server = HTTPServer(server_address, OauthListener)
     server.serve_forever()
 
