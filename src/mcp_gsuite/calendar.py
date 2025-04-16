@@ -190,3 +190,19 @@ class CalendarService():
             logging.error(f"Error deleting calendar event {event_id}: {str(e)}")
             logging.error(traceback.format_exc())
             return False
+
+    def list_colors(self) -> dict | None:
+        """
+        Lists the available colors for calendar and events.
+
+        Returns:
+            dict: A dictionary containing 'event' and 'calendar' color definitions if successful.
+            None: If an error occurred.
+        """
+        try:
+            colors = self.service.colors().get().execute()
+            return colors
+        except Exception as e:
+            logging.error("Error while listing colors:")
+            logging.error(traceback.format_exc())
+            return None

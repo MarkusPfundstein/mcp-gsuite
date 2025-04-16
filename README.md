@@ -30,6 +30,7 @@ Right now, this MCP server supports Gmail and Calendar integration with the foll
   + Custom timezone support
   + Notification preferences
 * Delete calendar events
+* List calendar colors
 
 Example prompts you can try:
 
@@ -121,7 +122,7 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
   <summary>Development/Unpublished Servers Configuration</summary>
-  
+
 
 ```json
 {
@@ -166,7 +167,7 @@ Note: You can also use the `uv run mcp-gsuite --accounts-file /path/to/custom/.a
 
 <details>
   <summary>Published Servers Configuration</summary>
-  
+
 
 ```json
 {

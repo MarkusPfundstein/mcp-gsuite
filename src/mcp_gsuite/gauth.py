@@ -12,6 +12,7 @@ import os
 import pydantic
 import json
 import argparse
+from urllib.parse import urlparse
 
 
 def get_gauth_file() -> str:
@@ -28,7 +29,32 @@ def get_gauth_file() -> str:
 
 CLIENTSECRETS_LOCATION = get_gauth_file()
 
-REDIRECT_URI = 'http://localhost:4100/code'
+def get_redirect_uri() -> str:
+    with open(get_gauth_file(), "r") as f:
+        data = json.load(f)
+    return data["web"]["redirect_uris"][0]
+
+def extract_redirect_uri_port() -> int:
+    try:
+        redirect_uri = get_redirect_uri()
+        if not redirect_uri:
+            logging.warning("Redirect URI is empty. Defaulting to port 4100.")
+            return 4100
+
+        parsed = urlparse(redirect_uri)
+        if parsed.scheme not in ("http", "https"):
+            logging.warning(f"Unexpected URI scheme: {parsed.scheme}. Defaulting to port 4100.")
+            return 4100
+
+        if parsed.port:
+            return parsed.port
+
+    except Exception as e:
+        logging.error(f"Failed to extract port from redirect URI: {e}")
+
+    return 4100
+
+REDIRECT_URI = get_redirect_uri()
 SCOPES = [
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
@@ -140,7 +166,7 @@ def store_credentials(credentials: OAuth2Credentials, user_id: str):
     """Store OAuth 2.0 credentials in the specified directory."""
     cred_file_path = _get_credential_filename(user_id=user_id)
     os.makedirs(os.path.dirname(cred_file_path), exist_ok=True)
-    
+
     data = credentials.to_json()
     with open(cred_file_path, "w") as f:
         f.write(data)
@@ -236,7 +262,7 @@ def get_credentials(authorization_code, state):
         import json
         logging.error(f"user_info: {json.dumps(user_info)}")
         email_address = user_info.get('email')
-        
+
         if credentials.refresh_token is not None:
             store_credentials(credentials, user_id=email_address)
             return credentials
@@ -256,4 +282,3 @@ def get_credentials(authorization_code, state):
         # No refresh token has been retrieved.
     authorization_url = get_authorization_url(email_address, state)
     raise NoRefreshTokenException(authorization_url)
-

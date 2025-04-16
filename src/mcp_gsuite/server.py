@@ -51,6 +51,7 @@ class OauthListener(BaseHTTPRequestHandler):
 
         
 
+
 load_dotenv()
 
 from . import tools_gmail
@@ -72,8 +73,7 @@ def start_auth_flow(user_id: str):
         import webbrowser
         webbrowser.open(auth_url)
 
-    # start server for code callback
-    server_address = ('', 4100)
+    server_address = ('', gauth.extract_redirect_uri_port())
     server = HTTPServer(server_address, OauthListener)
     server.serve_forever()
 
@@ -109,7 +109,7 @@ def add_tool_handler(tool_class: toolhandler.ToolHandler):
 def get_tool_handler(name: str) -> toolhandler.ToolHandler | None:
     if name not in tool_handlers:
         return None
-    
+
     return tool_handlers[name]
 
 add_tool_handler(tools_gmail.QueryEmailsToolHandler())
@@ -125,6 +125,7 @@ add_tool_handler(tools_calendar.ListCalendarsToolHandler())
 add_tool_handler(tools_calendar.GetCalendarEventsToolHandler())
 add_tool_handler(tools_calendar.CreateCalendarEventToolHandler())
 add_tool_handler(tools_calendar.DeleteCalendarEventToolHandler())
+add_tool_handler(tools_calendar.ListCalendarEventColorToolHandler())
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
@@ -135,10 +136,10 @@ async def list_tools() -> list[Tool]:
 
 @app.call_tool()
 async def call_tool(name: str, arguments: Any) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
-    try:        
+    try:
         if not isinstance(arguments, dict):
             raise RuntimeError("arguments must be dictionary")
-        
+
         if toolhandler.USER_ID_ARG not in arguments:
             raise RuntimeError("user_id argument is missing in dictionary.")
 
@@ -156,7 +157,7 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent | ImageCo
 
 
 async def main():
-    print(sys.platform)
+    logging.info(f"Platform: {sys.platform}")
     accounts = gauth.get_account_info()
     for account in accounts:
         creds = gauth.get_stored_credentials(user_id=account.email)
