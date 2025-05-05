@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/markuspfundstein-mcp-gsuite-badge.png)](https://mseep.ai/app/markuspfundstein-mcp-gsuite)
+
 # mcp-gsuite MCP server
 
 [![smithery badge](https://smithery.ai/badge/mcp-gsuite)](https://smithery.ai/server/mcp-gsuite)
